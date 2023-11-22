@@ -4,6 +4,7 @@
 .vscode/
 .DS_Store
 __pycache__/
+tests/
 .gitignore
 
 finbot.code-workspace

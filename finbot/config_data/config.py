@@ -6,16 +6,21 @@ from environs import Env
 @dataclass
 class TgBot:
     token: str
+    admin_id: int
+
+
+@dataclass
+class DatabaseConfig:
+    db_name: str
+    db_host: str
+    db_user: str
+    db_password: str
 
 
 @dataclass
 class Config:
     tg_bot: TgBot
-
-
-@dataclass
-class DB_Info:
-    pg_dsn: str
+    db: DatabaseConfig
 
 
 def load_config(path: None = None) -> Config:
@@ -23,11 +28,13 @@ def load_config(path: None = None) -> Config:
     env.read_env(path)
     return Config(
         tg_bot=TgBot(
-            token=env('BOT_TOKEN'))
-        )
-
-
-def load_db_info(path: None = None) -> DB_Info:
-    env = Env()
-    env.read_env(path)
-    return DB_Info(pg_dsn=env('POSTGRES_DSN'))
+            token=env('BOT_TOKEN'),
+            admin_id=int(env('ADMIN_ID')),
+        ),
+        db=DatabaseConfig(
+            db_name=env('DATABASE'),
+            db_host=env('DB_HOST'),
+            db_user=env('DB_USER'),
+            db_password=env('DB_PASSWORD'),
+        ),
+    )

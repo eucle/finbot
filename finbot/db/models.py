@@ -1,13 +1,11 @@
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, Date, Integer, Numeric, String
 
 
-# Создаем базовый класс для моделей
 class Base(DeclarativeBase):
     pass
 
 
-# Создаем модель, объекты которой будут храниться в БД
 class Transaction(Base):
     __tablename__ = 'transaction'
 
@@ -15,5 +13,5 @@ class Transaction(Base):
     category = Column(String)
     subcategory = Column(String)
     payment_method = Column(String)
-    amount = Column(Float)
-    created_at = Column(DateTime)
+    amount = Column(Numeric(10, 2))
+    created_at = Column(Date)

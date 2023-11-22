@@ -2,9 +2,9 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
-from config_data.config import Config, load_config
-from handlers import user_handlers
 
+from config_data.config import TgBot, load_config
+from handlers import user_handlers
 from keyboards.set_menu import set_main_menu
 
 
@@ -15,20 +15,20 @@ async def main():
     logging.basicConfig(
         level=logging.INFO,
         format='%(filename)s:%(lineno)d #%(levelname)-8s '
-               '[%(asctime)s] - %(name)s - %(message)s')
+               '[%(asctime)s] - %(name)s - %(message)s'
+    )
 
     logger.info('Starting bot')
 
-    config: Config = load_config()
+    bot_config: TgBot = load_config().tg_bot
 
-    bot: Bot = Bot(token=config.tg_bot.token,
+    bot: Bot = Bot(token=bot_config.token,
                    parse_mode='HTML')
     dp: Dispatcher = Dispatcher()
 
     await set_main_menu(bot)
 
     dp.include_router(user_handlers.router)
-    # dp.include_router(other_handlers.router)
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
