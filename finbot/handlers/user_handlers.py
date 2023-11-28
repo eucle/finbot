@@ -2,8 +2,9 @@ from aiogram import F, Router
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
-from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import RedisStorage, Redis
 from aiogram.types import CallbackQuery, Message
+from loguru import logger
 
 from config_data.config import load_config
 from db.database import create_db_entry, delete_entry, show_last_entries
@@ -15,7 +16,9 @@ from services.services import show_created_entry
 
 user_id = load_config().tg_bot.admin_id
 
-storage = MemoryStorage()
+redis = Redis(host=load_config().redisdb.redisdb_host)
+
+storage = RedisStorage(redis=redis)
 
 router = Router()
 
@@ -39,6 +42,7 @@ async def handle_start_command(message: Message, state: FSMContext):
         reply_markup=keyboard
     )
     await state.set_state(FSMRecordTransaction.select_category)
+    logger.info("Command /start sent.")
 
 
 @router.callback_query(
@@ -54,6 +58,7 @@ async def handle_category_selection(
         reply_markup=keyboard
     )
     await state.set_state(FSMRecordTransaction.select_subcategory)
+    logger.info("Category selected.")
 
 
 @router.callback_query(
@@ -72,6 +77,7 @@ async def handle_subcategory_selection(
         reply_markup=keyboard
     )
     await state.set_state(FSMRecordTransaction.select_payment_method)
+    logger.info("Subcategory selected.")
 
 
 @router.callback_query(
@@ -86,24 +92,28 @@ async def handle_payment_method_selection(
         text='Введи потраченную сумму:'
     )
     await state.set_state(FSMRecordTransaction.input_amount)
+    logger.info("Payment method selected.")
 
 
 @router.message(StateFilter(FSMRecordTransaction.input_amount), IsNumber())
 async def handle_transaction_amount(message: Message, state: FSMContext):
-    await state.update_data(amount=message.text, created_at=message.date)
+    await state.update_data(amount=message.text, created_at=str(message.date))
     create_db_entry(await state.get_data())
     await message.answer(
         text=show_created_entry(await state.get_data())
     )
     await state.clear()
+    logger.info("Amount specified.")
 
 
 @router.message(Command(commands='last'), IsAdmin(user_id))
 async def handle_last_entries_command(message: Message):
     await message.answer(text=show_last_entries())
+    logger.info("Last entries requested.")
 
 
 @router.message(Command(commands='delete'), IsAdmin(user_id))
 async def handle_delete_entry_command(message: Message):
     delete_information = delete_entry()
     await message.answer(text=delete_information)
+    logger.info("Last entry deleted.")

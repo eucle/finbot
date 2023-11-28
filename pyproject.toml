@@ -2,7 +2,7 @@
 name = "finbot"
 version = "0.1.0"
 description = ""
-authors = ["<eucle@ya.ru>"]
+authors = ["Ruslan Esakov <eucle@ya.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -11,6 +11,9 @@ aiogram = "^3.0.0"
 environs = "^9.5.0"
 sqlalchemy = "^2.0.21"
 psycopg = {extras = ["binary", "pool"], version = "^3.1.12"}
+redis = "^5.0.1"
+aioredis = "^2.0.1"
+loguru = "^0.7.2"
 
 
 [build-system]
